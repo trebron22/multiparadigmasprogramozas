@@ -1,4 +1,4 @@
-package hu.eke.multiparadigmasprogramozasinyelvekbeadando.dto.request;
+package hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

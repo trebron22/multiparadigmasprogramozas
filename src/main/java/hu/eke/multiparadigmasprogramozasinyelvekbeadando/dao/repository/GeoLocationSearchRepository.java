@@ -1,4 +1,4 @@
-package hu.eke.multiparadigmasprogramozasinyelvekbeadando.repository;
+package hu.eke.multiparadigmasprogramozasinyelvekbeadando.dao.repository;
 
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dao.GeoLocationSearch;
 import org.springframework.data.repository.CrudRepository;

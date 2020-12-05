@@ -1,4 +1,4 @@
-package hu.eke.multiparadigmasprogramozasinyelvekbeadando.dto;
+package hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

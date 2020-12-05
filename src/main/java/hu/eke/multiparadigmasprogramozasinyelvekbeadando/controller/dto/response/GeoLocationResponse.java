@@ -1,7 +1,7 @@
-package hu.eke.multiparadigmasprogramozasinyelvekbeadando.dto.response;
+package hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dto.Result;
+import hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto.Result;
 
 public class GeoLocationResponse {
     private Result[] results;

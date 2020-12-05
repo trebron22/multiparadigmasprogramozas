@@ -2,7 +2,7 @@ package hu.eke.multiparadigmasprogramozasinyelvekbeadando.utils;
 
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dao.Address;
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dao.GeoLocationSearch;
-import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dto.request.MultiParadigmasProgramozasiNyelvekBeadandoRequest;
+import hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto.request.MultiParadigmasProgramozasiNyelvekBeadandoRequest;
 
 import java.util.ArrayList;
 import java.util.List;

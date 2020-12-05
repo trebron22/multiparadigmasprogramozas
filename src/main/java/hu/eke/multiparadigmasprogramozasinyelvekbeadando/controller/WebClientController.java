@@ -3,12 +3,12 @@ package hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller;
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.config.GeoLocationConfig;
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dao.Address;
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dao.GeoLocationSearch;
-import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dto.request.MultiParadigmasProgramozasiNyelvekBeadandoRequest;
+import hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto.request.MultiParadigmasProgramozasiNyelvekBeadandoRequest;
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.exception.DoNotExistObjectException;
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.exception.MultiParadigmasProgramozasiNyelvekBeadandoRequestIsEmptyException;
-import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dto.Result;
-import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dto.response.GeoLocationResponse;
-import hu.eke.multiparadigmasprogramozasinyelvekbeadando.services.MultiiParadigmasBeadandoService;
+import hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto.Result;
+import hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto.response.GeoLocationResponse;
+import hu.eke.multiparadigmasprogramozasinyelvekbeadando.service.MultiiParadigmasBeadandoService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,46 +60,14 @@ public class WebClientController {
     public GeoLocationResponse getGeoLocation(@RequestBody MultiParadigmasProgramozasiNyelvekBeadandoRequest multiParadigmasProgramozasiNyelvekBeadandoRequest) throws MultiParadigmasProgramozasiNyelvekBeadandoRequestIsEmptyException {
         logger.info("getGeoLocation method was called with: " + multiParadigmasProgramozasiNyelvekBeadandoRequest.getAddresses().size() + " parameters");
 
-        if (multiParadigmasProgramozasiNyelvekBeadandoRequest.getAddresses().isEmpty() || (multiParadigmasProgramozasiNyelvekBeadandoRequest.getAddresses().size() == 1 && StringUtils.isEmpty(multiParadigmasProgramozasiNyelvekBeadandoRequest.getAddresses().get(0)))) {
-            throw new MultiParadigmasProgramozasiNyelvekBeadandoRequestIsEmptyException("Request was empty");
-        }
-
-        WebClient.RequestBodySpec geoLocationUri = getRequestBodySpec(multiParadigmasProgramozasiNyelvekBeadandoRequest);
-        WebClient.ResponseSpec response = getResponseSpec(geoLocationUri);
-        if (response.bodyToMono(GeoLocationResponse.class).block().getStatus().equals("OK")) {
+        GeoLocationResponse geoLocationResponse = multiiParadigmasBeadandoService.getGeoLocationResponse(multiParadigmasProgramozasiNyelvekBeadandoRequest);
+        if (("OK").equals(geoLocationResponse.getStatus())) {
             multiiParadigmasBeadandoService.saveSearchParameters(multiParadigmasProgramozasiNyelvekBeadandoRequest);
         }
 
-        return response.bodyToMono(GeoLocationResponse.class).block();
+        return multiiParadigmasBeadandoService.getGeoLocationResponse(multiParadigmasProgramozasiNyelvekBeadandoRequest);
     }
 
-    private WebClient.ResponseSpec getResponseSpec(WebClient.RequestBodySpec geoLocationUri) {
-        WebClient.ResponseSpec response = geoLocationUri
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .accept(MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML)
-                .acceptCharset(Charset.forName("UTF-8"))
-                .retrieve();
-        return response;
-    }
-
-    private WebClient.RequestBodySpec getRequestBodySpec(MultiParadigmasProgramozasiNyelvekBeadandoRequest multiParadigmasProgramozasiNyelvekBeadandoRequest) {
-        WebClient.RequestBodySpec geoLocationUri = createWebClientWithServerURLAndDefaultValues().method(HttpMethod.POST)
-                .uri(geoLocationConfig.getURI()
-                        + String.join(",", multiParadigmasProgramozasiNyelvekBeadandoRequest.getAddresses())
-                        + "&key="
-                        + geoLocationConfig.getAPI_KEY()
-                );
-        return geoLocationUri;
-    }
-
-    public org.springframework.web.reactive.function.client.WebClient createWebClientWithServerURLAndDefaultValues() {
-        logger.info("createWebClientWithServerURLAndDefaultValues method was called");
-        return org.springframework.web.reactive.function.client.WebClient.builder()
-                .baseUrl(geoLocationConfig.getBASE_URL())
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultUriVariables(Collections.singletonMap("url", geoLocationConfig.getBASE_URL()))
-                .build();
-    }
 
     @ExceptionHandler(value = MultiParadigmasProgramozasiNyelvekBeadandoRequestIsEmptyException.class)
     public GeoLocationResponse multiParadigmasProgramozasiNyelvekBeadandoRequestIsEmptyException(MultiParadigmasProgramozasiNyelvekBeadandoRequestIsEmptyException exception) {
