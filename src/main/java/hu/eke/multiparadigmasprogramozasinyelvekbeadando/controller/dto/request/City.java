@@ -9,6 +9,6 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class MultiParadigmasProgramozasiNyelvekBeadandoRequest {
-    private List<String> addresses;
+public class City {
+    private String name;
 }

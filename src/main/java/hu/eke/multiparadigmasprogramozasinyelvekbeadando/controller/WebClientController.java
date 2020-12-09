@@ -1,25 +1,20 @@
 package hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller;
 
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.config.GeoLocationConfig;
-import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dao.Address;
-import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dao.GeoLocationSearch;
-import hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto.request.MultiParadigmasProgramozasiNyelvekBeadandoRequest;
+import hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto.response.GeoLocationLngLatResponse;
+import hu.eke.multiparadigmasprogramozasinyelvekbeadando.dao.AddressEntity;
+import hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto.request.City;
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.exception.DoNotExistObjectException;
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.exception.MultiParadigmasProgramozasiNyelvekBeadandoRequestIsEmptyException;
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto.Result;
 import hu.eke.multiparadigmasprogramozasinyelvekbeadando.controller.dto.response.GeoLocationResponse;
-import hu.eke.multiparadigmasprogramozasinyelvekbeadando.service.MultiiParadigmasBeadandoService;
+import hu.eke.multiparadigmasprogramozasinyelvekbeadando.service.MultiParadigmasBeadandoServiceImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.*;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
-
-import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.List;
 
 @RestController
 public class WebClientController {
@@ -30,42 +25,44 @@ public class WebClientController {
     GeoLocationConfig geoLocationConfig;
 
     @Autowired
-    MultiiParadigmasBeadandoService multiiParadigmasBeadandoService;
+    MultiParadigmasBeadandoServiceImpl multiParadigmasBeadandoService;
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/geolocation/{geoLocationId}")
-    public List<Address> getAddress(@PathVariable Long geoLocationId) throws DoNotExistObjectException {
-        logger.info("getGeoLocationSearch method was called with: " + geoLocationId + " parameter");
-        return multiiParadigmasBeadandoService.getAddress(geoLocationId);
+    @GetMapping("/geolocation/{addressId}")
+    public AddressEntity getAddress(@PathVariable Long addressId) throws DoNotExistObjectException {
+        logger.info("getGeoLocationSearch method was called with: " + addressId + " parameter");
+        return multiParadigmasBeadandoService.getAddress(addressId);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/address")
-    public ResponseEntity<Address> updateEmployee(@RequestBody Address employee) {
-        logger.info("updateEmployee method was called with: " + employee + " parameter");
-        Address address = multiiParadigmasBeadandoService.editEmployees(employee);
-        return new ResponseEntity<>(address, HttpStatus.OK);
+    public ResponseEntity<AddressEntity> updateAddress(@RequestBody AddressEntity addressEntity) {
+        logger.info("updateAddress method was called with: " + addressEntity + " parameter");
+        AddressEntity editAddressEntity = multiParadigmasBeadandoService.editAddress(addressEntity);
+        return new ResponseEntity<>(editAddressEntity, HttpStatus.OK);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @DeleteMapping("/employee")
-    public ResponseEntity<String> deleteEmployee(@RequestParam(name = "addressId") Long addressId) {
-        logger.info("deleteEmployee method was called with: " + addressId + " parameter");
-        multiiParadigmasBeadandoService.deleteAddress(addressId);
-        return new ResponseEntity<>("Employee with ID :" + addressId + " deleted successfully", HttpStatus.OK);
+
+    @DeleteMapping("/address/{addressId}")
+    public ResponseEntity<String> deleteAddress(@PathVariable Long addressId) {
+        logger.info("deleteAddress method was called with: " + addressId + " parameter");
+        multiParadigmasBeadandoService.deleteAddress(addressId);
+        return new ResponseEntity<>("Address with ID :" + addressId + " deleted successfully", HttpStatus.OK);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/geolocation")
-    public GeoLocationResponse getGeoLocation(@RequestBody MultiParadigmasProgramozasiNyelvekBeadandoRequest multiParadigmasProgramozasiNyelvekBeadandoRequest) throws MultiParadigmasProgramozasiNyelvekBeadandoRequestIsEmptyException {
-        logger.info("getGeoLocation method was called with: " + multiParadigmasProgramozasiNyelvekBeadandoRequest.getAddresses().size() + " parameters");
+    public GeoLocationLngLatResponse getGeoLocation(@RequestBody City city) throws MultiParadigmasProgramozasiNyelvekBeadandoRequestIsEmptyException {
+        logger.info("getGeoLocation method was called with: " + city.getName() + " parameters");
 
-        GeoLocationResponse geoLocationResponse = multiiParadigmasBeadandoService.getGeoLocationResponse(multiParadigmasProgramozasiNyelvekBeadandoRequest);
-        if (("OK").equals(geoLocationResponse.getStatus())) {
-            multiiParadigmasBeadandoService.saveSearchParameters(multiParadigmasProgramozasiNyelvekBeadandoRequest);
+        GeoLocationLngLatResponse geoLocationLngLatResponse = multiParadigmasBeadandoService.getGeoLocationResponse(city);
+
+        if (geoLocationLngLatResponse != null) {
+            multiParadigmasBeadandoService.saveSearchParameters(city);
         }
 
-        return multiiParadigmasBeadandoService.getGeoLocationResponse(multiParadigmasProgramozasiNyelvekBeadandoRequest);
+        return geoLocationLngLatResponse;
     }
 
 
@@ -79,21 +76,27 @@ public class WebClientController {
     }
 
     @ExceptionHandler(value = DoNotExistObjectException.class)
-    public Address doNotExistObjectException(DoNotExistObjectException exception) {
+    public AddressEntity doNotExistObjectException(DoNotExistObjectException exception) {
         logger.info("doNotExistObjectException method was called with: " + exception.getMessage() + " message");
-        Address address = new Address();
-        address.setSearch("");
-        address.setGeoLocationSearch(new GeoLocationSearch());
-        return address;
+        AddressEntity addressEntity = new AddressEntity();
+        addressEntity.setSearch("");
+        return addressEntity;
+    }
+
+    @ExceptionHandler(value = EmptyResultDataAccessException.class)
+    public AddressEntity emptyResultDataAccessException(EmptyResultDataAccessException exception) {
+        logger.info("emptyResultDataAccessException method was called with: " + exception.getMessage() + " message");
+        AddressEntity addressEntity = new AddressEntity();
+        addressEntity.setSearch("");
+        return addressEntity;
     }
 
     @ExceptionHandler(value = NumberFormatException.class)
-    public Address numberFormatException(NumberFormatException exception) {
+    public AddressEntity numberFormatException(NumberFormatException exception) {
         logger.info("numberFormatException method was called with: " + exception.getMessage() + " message");
-        Address address = new Address();
-        address.setSearch("");
-        address.setGeoLocationSearch(new GeoLocationSearch());
-        return address;
+        AddressEntity addressEntity = new AddressEntity();
+        addressEntity.setSearch("");
+        return addressEntity;
     }
 
 }

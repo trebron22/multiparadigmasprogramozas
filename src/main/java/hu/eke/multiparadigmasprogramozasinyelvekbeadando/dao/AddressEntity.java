@@ -10,16 +10,12 @@ import javax.persistence.*;
 @Setter
 @Getter
 @ToString
-@Table(name="Addresses")
-public class Address {
+@Table(name="Address")
+public class AddressEntity {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Long id;
 
     private String search;
-
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    @JoinColumn(name="geolocation_search_id",referencedColumnName = "id", nullable=false)
-    private GeoLocationSearch geoLocationSearch;
 }
